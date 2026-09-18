@@ -152,7 +152,7 @@ export default function ReportScreen() {
             </Text>
             <Text style={styles.serviceSubtitle}>Cardiac, trauma, stroke, accidents</Text>
             {service === SERVICE.MEDICAL ? (
-              <View style={[styles.activeCheckBadge, { backgroundColor: '#DC2626' }]}>
+              <View style={[styles.activeCheckBadge, { backgroundColor: '#0F172A' }]}>
                 <Text style={styles.activeCheckText}>✓</Text>
               </View>
             ) : null}
@@ -174,7 +174,7 @@ export default function ReportScreen() {
             </Text>
             <Text style={styles.serviceSubtitle}>Blazes, hazmat, technical extraction</Text>
             {service === SERVICE.FIRE ? (
-              <View style={[styles.activeCheckBadge, { backgroundColor: '#EA580C' }]}>
+              <View style={[styles.activeCheckBadge, { backgroundColor: '#0F172A' }]}>
                 <Text style={styles.activeCheckText}>✓</Text>
               </View>
             ) : null}
@@ -213,7 +213,11 @@ export default function ReportScreen() {
                   <View
                     style={[
                       styles.microPriorityBadge,
-                      { backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : itemPriority.bg },
+                      {
+                        backgroundColor: isSelected ? 'rgba(255,255,255,0.18)' : itemPriority.bg,
+                        borderWidth: 1,
+                        borderColor: isSelected ? 'rgba(255,255,255,0.3)' : itemPriority.border,
+                      },
                     ]}
                   >
                     <Text
@@ -243,7 +247,7 @@ export default function ReportScreen() {
         ) : null}
 
         {/* Live Priority Notice */}
-        <View style={[styles.priorityBanner, { borderColor: priorityInfo.color, backgroundColor: priorityInfo.bg }]}>
+        <View style={[styles.priorityBanner, { borderColor: priorityInfo.border, backgroundColor: priorityInfo.bg }]}>
           <View style={[styles.priorityBadge, { backgroundColor: priorityInfo.color }]}>
             <Text style={styles.priorityBadgeText}>{priorityInfo.label}</Text>
           </View>
@@ -340,7 +344,7 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
   },
   topBar: {
     flexDirection: 'row',
@@ -349,13 +353,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
   },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
@@ -370,16 +376,18 @@ const styles = StyleSheet.create({
   statusPillText: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#334155',
+    color: '#0F172A',
     letterSpacing: 0.4,
   },
   historyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 12,
     gap: 4,
   },
   historyBtnIcon: {
@@ -387,8 +395,8 @@ const styles = StyleSheet.create({
   },
   historyBtnText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#2563EB',
+    fontWeight: '800',
+    color: '#0F172A',
   },
   scrollContent: {
     paddingHorizontal: 18,
@@ -420,8 +428,10 @@ const styles = StyleSheet.create({
   sectionNumber: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#64748B',
     backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -429,7 +439,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#475569',
+    color: '#334155',
     letterSpacing: 0.6,
   },
   serviceRow: {
@@ -438,26 +448,31 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
     borderRadius: 16,
     padding: 14,
     position: 'relative',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
   },
   serviceCardMedicalActive: {
-    borderColor: '#DC2626',
-    backgroundColor: '#FEF2F2',
+    borderColor: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   serviceCardFireActive: {
-    borderColor: '#EA580C',
-    backgroundColor: '#FFF7ED',
+    borderColor: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   serviceIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -466,11 +481,11 @@ const styles = StyleSheet.create({
   },
   serviceIconWrapMedical: {
     borderColor: '#FCA5A5',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FEF2F2',
   },
   serviceIconWrapFire: {
     borderColor: '#FDBA74',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFF7ED',
   },
   serviceIcon: {
     fontSize: 22,
@@ -482,10 +497,10 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   serviceTitleMedical: {
-    color: '#991B1B',
+    color: '#0F172A',
   },
   serviceTitleFire: {
-    color: '#9A3412',
+    color: '#0F172A',
   },
   serviceSubtitle: {
     fontSize: 11,
@@ -513,12 +528,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   classCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     paddingHorizontal: 12,
     paddingVertical: 9,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 2,
+    elevation: 1,
   },
   classCardSelected: {
     backgroundColor: '#0F172A',
@@ -593,7 +613,7 @@ const styles = StyleSheet.create({
     padding: 13,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
   },
@@ -601,7 +621,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -631,20 +653,22 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   changeLocationPill: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 8,
     marginLeft: 8,
   },
   changeLocationText: {
     fontSize: 11.5,
-    fontWeight: '700',
-    color: '#2563EB',
+    fontWeight: '800',
+    color: '#0F172A',
   },
   notesInput: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#CBD5E1',
     borderRadius: 12,
     padding: 12,
@@ -655,16 +679,16 @@ const styles = StyleSheet.create({
   },
   transmitButton: {
     backgroundColor: '#DC2626',
-    borderRadius: 16,
+    borderRadius: 14,
     paddingVertical: 16,
     marginTop: 24,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   transmitButtonDisabled: {
     opacity: 0.65,

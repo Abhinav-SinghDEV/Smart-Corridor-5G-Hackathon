@@ -16,10 +16,10 @@ import { getReports, EmergencyReport } from '../services/emergencyService';
 import { PRIORITY_CONFIG } from '../constants/emergency';
 
 const STATUS_CONFIG = {
-  pending: { label: 'Awaiting Dispatch', bg: '#FEF3C7', color: '#B45309', dot: '#F59E0B' },
-  dispatched: { label: 'Unit En Route', bg: '#DBEAFE', color: '#1D4ED8', dot: '#3B82F6' },
-  on_scene: { label: 'Active On Scene', bg: '#EDE9FE', color: '#6D28D9', dot: '#8B5CF6' },
-  completed: { label: 'Resolved', bg: '#DCFCE7', color: '#15803D', dot: '#22C55E' },
+  pending: { label: 'Awaiting Dispatch', bg: '#FFF7ED', color: '#EA580C', border: '#FDBA74', dot: '#F97316' },
+  dispatched: { label: 'Unit En Route', bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
+  on_scene: { label: 'Active On Scene', bg: '#F5F3FF', color: '#7C3AED', border: '#DDD6FE', dot: '#8B5CF6' },
+  completed: { label: 'Resolved', bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0', dot: '#22C55E' },
 } as const;
 
 export default function ReportsScreen() {
@@ -110,7 +110,7 @@ export default function ReportsScreen() {
                   <Text style={styles.idText}>{item.id}</Text>
                   <Text style={styles.timeText}>· {timeString}</Text>
                 </View>
-                <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
+                <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg, borderWidth: 1, borderColor: statusInfo.border }]}>
                   <View style={[styles.statusDot, { backgroundColor: statusInfo.dot }]} />
                   <Text style={[styles.statusText, { color: statusInfo.color }]}>
                     {statusInfo.label}
@@ -122,7 +122,7 @@ export default function ReportsScreen() {
                 <View style={styles.serviceBadgeRow}>
                   <Text style={styles.serviceEmoji}>{isMedical ? '🚑' : '🚒'}</Text>
                   <Text style={styles.emergencyTitle}>{item.emergencyLabel}</Text>
-                  <View style={[styles.priorityTag, { backgroundColor: priorityInfo.bg }]}>
+                  <View style={[styles.priorityTag, { backgroundColor: priorityInfo.bg, borderWidth: 1, borderColor: priorityInfo.border }]}>
                     <Text style={[styles.priorityTagText, { color: priorityInfo.color }]}>
                       P{item.priority}
                     </Text>
@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   backBtnText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#2563EB',
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
   },
   newReportBtn: {
     backgroundColor: '#DC2626',
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   newReportBtnText: {
     fontSize: 12,
@@ -225,14 +225,16 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   hotlineChip: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 8,
   },
   hotlineChipText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0F172A',
   },
   listContent: {
@@ -249,7 +251,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
   },
@@ -306,7 +310,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: '#E2E8F0',
   },
   idBadge: {
     flexDirection: 'row',
@@ -385,7 +389,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -396,17 +402,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#16A34A',
   },
   assignedUnitText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#1D4ED8',
+    fontWeight: '800',
+    color: '#0F172A',
   },
   notesBox: {
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
     borderRadius: 8,
     padding: 8,
     marginTop: 8,
@@ -422,6 +428,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
   },
   photoThumbnail: {
     width: '100%',
@@ -431,7 +439,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 6,
     left: 6,
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,

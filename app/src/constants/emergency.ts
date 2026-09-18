@@ -34,9 +34,9 @@ export const EMERGENCY_CLASSES: Record<ServiceType, EmergencyClass[]> = {
 };
 
 export const PRIORITY_CONFIG = {
-  1: { label: 'P1 · CRITICAL', color: '#DC2626', bg: '#FEE2E2', desc: 'Life-threatening · Immediate dispatch' },
-  2: { label: 'P2 · HIGH', color: '#EA580C', bg: '#FFEDD5', desc: 'Urgent · Priority dispatch' },
-  3: { label: 'P3 · NORMAL', color: '#2563EB', bg: '#DBEAFE', desc: 'Standard response' },
+  1: { label: 'P1 · CRITICAL', color: '#DC2626', bg: '#FEF2F2', border: '#FCA5A5', desc: 'Life-threatening · Immediate dispatch' },
+  2: { label: 'P2 · HIGH', color: '#EA580C', bg: '#FFF7ED', border: '#FDBA74', desc: 'Urgent · Priority dispatch' },
+  3: { label: 'P3 · NORMAL', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', desc: 'Standard response' },
 } as const;
 
 export interface JunctionNode {

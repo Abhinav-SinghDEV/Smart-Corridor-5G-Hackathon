@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 12,
@@ -196,8 +196,9 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   itemCardSelected: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#2563EB',
+    backgroundColor: '#F1F5F9',
+    borderColor: '#0F172A',
+    borderWidth: 1.5,
   },
   pinCircle: {
     width: 36,
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   pinCircleSelected: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: '#0F172A',
   },
   pinIcon: {
     fontSize: 15,
@@ -223,7 +224,8 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   itemNameSelected: {
-    color: '#1D4ED8',
+    color: '#0F172A',
+    fontWeight: '800',
   },
   itemMeta: {
     fontSize: 11,
@@ -232,16 +234,16 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   checkBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#2563EB',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
   },
   checkIcon: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '900',
     color: '#FFFFFF',
   },
