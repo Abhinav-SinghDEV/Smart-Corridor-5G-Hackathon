@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { ServiceType } from '../constants/emergency';
 
 export interface EmergencyReport {
@@ -20,18 +21,72 @@ export interface EmergencyReport {
 
 const STORAGE_KEY = '@packmen_citizen_reports';
 
+let cachedWorkingHost: string | null = null;
+
+export function getCandidateBackendUrls(): string[] {
+  const urls: string[] = [];
+
+  if (process.env.EXPO_PUBLIC_BACKEND_URL) {
+    urls.push(process.env.EXPO_PUBLIC_BACKEND_URL);
+  }
+
+  // 1. localhost (works via adb reverse over USB / wireless adb on physical phone, and on iOS)
+  urls.push('http://localhost:4000');
+  urls.push('http://127.0.0.1:4000');
+
+  // 2. hostUri from Expo if available (works on LAN Wi-Fi when firewall allows)
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) {
+    const ip = hostUri.split(':')[0];
+    if (ip && !ip.includes('exp.direct') && !ip.includes('ngrok') && ip !== 'localhost' && ip !== '127.0.0.1') {
+      urls.push(`http://${ip}:4000`);
+    }
+  }
+
+  // 3. Android Studio emulator fallback
+  if (Platform.OS === 'android') {
+    urls.push('http://10.0.2.2:4000');
+  }
+
+  return Array.from(new Set(urls));
+}
+
+export async function fetchFromBackend(path: string, options?: RequestInit): Promise<Response> {
+  const candidates = getCandidateBackendUrls();
+  if (cachedWorkingHost && candidates.includes(cachedWorkingHost)) {
+    candidates.splice(candidates.indexOf(cachedWorkingHost), 1);
+    candidates.unshift(cachedWorkingHost);
+  }
+
+  let lastError: any = null;
+  for (const host of candidates) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${host}${path}`, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (res.ok || res.status < 500) {
+        cachedWorkingHost = host;
+        return res;
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('No reachable backend');
+}
+
 export async function getReports(): Promise<EmergencyReport[]> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     const localReports: EmergencyReport[] = raw ? JSON.parse(raw) : [];
 
-    // Optional background sync with backend for dispatched status
+    // Background sync with backend for dispatched status
     try {
-      const backendHost = Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000';
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(`${backendHost}/api/citizen-reports`, { signal: controller.signal });
-      clearTimeout(timeout);
+      const res = await fetchFromBackend('/api/citizen-reports');
       if (res.ok) {
         const remoteReports: any[] = await res.json();
         const remoteMap = new Map(remoteReports.map((r) => [r.id, r]));
@@ -102,13 +157,9 @@ export async function submitEmergency(data: {
   };
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const backendHost = Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000';
-    await fetch(`${backendHost}/api/citizen-reports`, {
+    await fetchFromBackend('/api/citizen-reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
       body: JSON.stringify({
         id: reportId,
         service: data.service,
@@ -120,10 +171,9 @@ export async function submitEmergency(data: {
         note: data.note,
         photoData: data.photoUri || null,
       }),
-    }).catch(() => {});
-    clearTimeout(timeout);
-  } catch {
-    // Graceful offline fallback
+    });
+  } catch (err) {
+    console.warn('[emergencyService] Remote transmission failed, saved in local queue:', err);
   }
 
   await saveReport(report);

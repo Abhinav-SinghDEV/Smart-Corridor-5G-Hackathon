@@ -47,12 +47,18 @@ let networkLoaded = false;
  * `leg.from ?? leg.from_` scattered through the views.
  */
 function normaliseMission(mission) {
-  if (!mission || !Array.isArray(mission.legs)) return mission;
+  if (!mission) return mission;
+  const legs = Array.isArray(mission.legs)
+    ? mission.legs.map((leg) =>
+        leg && leg.from === undefined && leg.from_ !== undefined ? { ...leg, from: leg.from_ } : leg,
+      )
+    : mission.legs;
+  const photo = mission.photoUri || mission.photoData || null;
   return {
     ...mission,
-    legs: mission.legs.map((leg) =>
-      leg && leg.from === undefined && leg.from_ !== undefined ? { ...leg, from: leg.from_ } : leg,
-    ),
+    legs,
+    photoUri: photo,
+    photoData: photo,
   };
 }
 
@@ -143,10 +149,37 @@ async function loadSnapshot() {
   const byId = new Map(world.nodes.map((n) => [n.id, n]));
   const nodes = (snapshot.nodes || []).map((n) => ({ ...(byId.get(n.id) || {}), ...n }));
 
+  // Existing missions by id to preserve rich client metadata (photoUri, photoData, mlAssessment, note, etc.)
+  const existingMissionsById = new Map(world.missions.map((m) => [m.id, m]));
+  const incomingMissions = (snapshot.missions || []).map(normaliseMission);
+  const incomingIds = new Set(incomingMissions.map((m) => m.id));
+
+  const mergedSnapshotMissions = incomingMissions.map((incoming) => {
+    const existing = existingMissionsById.get(incoming.id);
+    if (!existing) return incoming;
+    const photo = incoming.photoUri || incoming.photoData || existing.photoUri || existing.photoData || null;
+    return {
+      ...existing,
+      ...incoming,
+      photoUri: photo,
+      photoData: photo,
+      mlAssessment: incoming.mlAssessment || existing.mlAssessment || null,
+      note: incoming.note || existing.note || '',
+      isCitizenReport: incoming.isCitizenReport ?? existing.isCitizenReport ?? false,
+      citizenReportId: incoming.citizenReportId || existing.citizenReportId || null,
+      emergencyLabel: incoming.emergencyLabel || existing.emergencyLabel || '',
+      sceneName: incoming.sceneName || existing.sceneName || null,
+    };
+  });
+
+  // Preserve local/pending citizen missions that are awaiting dispatch or not yet acknowledged in server snapshot
+  const preservedMissions = world.missions.filter((m) => !incomingIds.has(m.id));
+  const finalMissions = [...mergedSnapshotMissions, ...preservedMissions];
+
   world.patch({
     nodes: nodes.length ? nodes : world.nodes,
     units: snapshot.units || [],
-    missions: (snapshot.missions || []).map(normaliseMission),
+    missions: finalMissions,
     disasters: snapshot.disasters || [],
     lights: snapshot.lights || {},
     simTime: snapshot.simTime ?? 0,
@@ -228,7 +261,25 @@ function applyRouteChange(message) {
 function applyMission(message) {
   const mission = normaliseMission(message.mission);
   if (!mission || !mission.id) return;
-  useWorldStore.setState((state) => ({ missions: upsertById(state.missions, mission) }));
+  useWorldStore.setState((state) => {
+    const existing = state.missions.find((m) => m.id === mission.id);
+    const photo = mission.photoUri || mission.photoData || existing?.photoUri || existing?.photoData || null;
+    const merged = existing
+      ? {
+          ...existing,
+          ...mission,
+          photoUri: photo,
+          photoData: photo,
+          mlAssessment: mission.mlAssessment || existing.mlAssessment || null,
+          note: mission.note || existing.note || '',
+          isCitizenReport: mission.isCitizenReport ?? existing.isCitizenReport ?? false,
+          citizenReportId: mission.citizenReportId || existing.citizenReportId || null,
+          emergencyLabel: mission.emergencyLabel || existing.emergencyLabel || '',
+          sceneName: mission.sceneName || existing.sceneName || null,
+        }
+      : mission;
+    return { missions: upsertById(state.missions, merged) };
+  });
 }
 
 function applyDisasterCreated(message) {

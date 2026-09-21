@@ -170,6 +170,7 @@ export function createMission({
     sceneNode: targetNode,
     note,
     photoUri: photoUri || null,
+    photoData: photoUri || null,
     mlAssessment: mlAssessment || null,
     isCitizenReport: Boolean(isCitizenReport),
     citizenReportId: citizenReportId || null,

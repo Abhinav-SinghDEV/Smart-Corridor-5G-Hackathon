@@ -41,7 +41,7 @@ export function useCitizenReportsSync() {
       isPollingRef.current = true;
 
       try {
-        const res = await fetch(`${API_URL}/api/citizen-reports?status=pending`);
+        const res = await fetch(`${API_URL}/api/citizen-reports?limit=50`);
         if (!res.ok) return;
         const reports = await res.json();
         if (cancelled || !Array.isArray(reports)) return;
@@ -49,53 +49,72 @@ export function useCitizenReportsSync() {
         const currentMissions = useWorldStore.getState().missions;
 
         for (const report of reports) {
-          const alreadyExists =
-            knownIds.has(report.id) ||
-            currentMissions.some((m) => m.id === report.id || m.citizenReportId === report.id);
+          const existing = currentMissions.find(
+            (m) => m.id === report.id || m.citizenReportId === report.id,
+          );
 
-          if (!alreadyExists) {
-            knownIds.add(report.id);
+          if (existing) {
+            // Keep rich citizen evidence (photo, AI verdict, caller note) attached even if server snapshot missed them
+            const hasMissingPhoto = (!existing.photoUri || !existing.photoData) && Boolean(report.photoData);
+            const hasMissingMl = !existing.mlAssessment && Boolean(report.mlAssessment);
+            const hasMissingNote = !existing.note && Boolean(report.note);
 
-            const mission = createMission({
-              id: report.id,
-              service: report.service,
-              emergencyClass: report.emergencyClass,
-              emergencyLabel: report.emergencyLabel,
-              priority: report.priority,
-              sceneNode: report.sceneNode,
-              note: report.note,
-              photoUri: report.photoData,
-              mlAssessment: report.mlAssessment,
-              isCitizenReport: true,
-              citizenReportId: report.id,
-            });
+            if (hasMissingPhoto || hasMissingMl || hasMissingNote) {
+              useWorldStore.getState().updateMission(existing.id, {
+                photoUri: existing.photoUri || report.photoData || null,
+                photoData: existing.photoData || report.photoData || null,
+                mlAssessment: existing.mlAssessment || report.mlAssessment || null,
+                note: existing.note || report.note || '',
+                isCitizenReport: true,
+                citizenReportId: report.id,
+              });
+            }
+          } else if (report.status === 'pending') {
+            if (!knownIds.has(report.id)) {
+              knownIds.add(report.id);
 
-            if (useConnectionStore.getState().source === 'server') {
-              sim.missions.create({
+              const mission = createMission({
                 id: report.id,
                 service: report.service,
                 emergencyClass: report.emergencyClass,
-                sceneNode: report.sceneNode,
-                priority: report.priority,
-                note: report.note,
                 emergencyLabel: report.emergencyLabel,
-              }).catch(() => {});
-            }
+                priority: report.priority,
+                sceneNode: report.sceneNode,
+                note: report.note,
+                photoUri: report.photoData,
+                photoData: report.photoData,
+                mlAssessment: report.mlAssessment,
+                isCitizenReport: true,
+                citizenReportId: report.id,
+              });
 
-            const mlTag = report.mlAssessment?.mlVerified
-              ? ` • 🤖 AI Verified: ${report.mlAssessment.hazardLabel} (${report.mlAssessment.hazardConfidence}%)`
-              : '';
+              if (useConnectionStore.getState().source === 'server') {
+                sim.missions.create({
+                  id: report.id,
+                  service: report.service,
+                  emergencyClass: report.emergencyClass,
+                  sceneNode: report.sceneNode,
+                  priority: report.priority,
+                  note: report.note,
+                  emergencyLabel: report.emergencyLabel,
+                }).catch(() => {});
+              }
 
-            toast.error(`🚨 Citizen Emergency Reported!`, {
-              description: `${report.emergencyLabel} at ${report.sceneName || report.sceneNode} (P${report.priority})${mlTag}`,
-              duration: 8000,
-              action: {
-                label: 'Inspect',
-                onClick: () => {
-                  useUIStore.getState().setSelectedMissionId(mission.id);
+              const mlTag = report.mlAssessment?.mlVerified
+                ? ` • 🤖 AI Verified: ${report.mlAssessment.hazardLabel} (${report.mlAssessment.hazardConfidence}%)`
+                : '';
+
+              toast.error(`🚨 Citizen Emergency Reported!`, {
+                description: `${report.emergencyLabel} at ${report.sceneName || report.sceneNode} (P${report.priority})${mlTag}`,
+                duration: 8000,
+                action: {
+                  label: 'Inspect',
+                  onClick: () => {
+                    useUIStore.getState().setSelectedMissionId(mission.id);
+                  },
                 },
-              },
-            });
+              });
+            }
           }
         }
       } catch {

@@ -15,6 +15,7 @@ import {
 } from '../../domain/constants';
 import { Badge, Button, EmptyState } from '../common/ui';
 import { formatDuration } from '../../utils/geo';
+import IncidentEvidenceModal from './IncidentEvidenceModal';
 
 const statusTone = {
   [MISSION_STATUS.PENDING]: 'bg-gray-100 text-gray-600',
@@ -27,6 +28,7 @@ const statusTone = {
 };
 
 export function MissionRow({ mission, compact = false }) {
+  const [isInspectOpen, setIsInspectOpen] = React.useState(false);
   const nodes = useWorldStore((s) => s.nodes);
   const units = useWorldStore((s) => s.units);
   const selectedMissionId = useUIStore((s) => s.selectedMissionId);
@@ -64,19 +66,52 @@ export function MissionRow({ mission, compact = false }) {
               <Badge tone={`${tone.bg} ${tone.text}`}>{PRIORITY_LABEL[mission.priority]}</Badge>
               <Badge tone={statusTone[mission.status]}>{MISSION_STATUS_LABEL[mission.status]}</Badge>
               {mission.isCitizenReport && (
-                <Badge tone="bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 font-semibold">
-                  <Smartphone className="w-3 h-3" /> App
-                </Badge>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMissionId(mission.id);
+                    setIsInspectOpen(true);
+                  }}
+                  className="cursor-pointer group flex items-center"
+                  title="Click to view citizen report & evidence"
+                >
+                  <Badge tone="bg-emerald-50 text-emerald-700 border border-emerald-200 group-hover:bg-emerald-100 group-hover:border-emerald-300 transition-all flex items-center gap-1 font-semibold shadow-2xs">
+                    <Smartphone className="w-3 h-3 text-emerald-600" /> App
+                  </Badge>
+                </button>
               )}
-              {Boolean(mission.photoUri) && (
-                <Badge tone="bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1 font-semibold">
-                  <Camera className="w-3 h-3" /> Photo
-                </Badge>
+              {Boolean(mission.photoUri || mission.photoData) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMissionId(mission.id);
+                    setIsInspectOpen(true);
+                  }}
+                  className="cursor-pointer group flex items-center"
+                  title="Click to view incident photo & AI verdict"
+                >
+                  <Badge tone="bg-blue-50 text-blue-700 border border-blue-200 group-hover:bg-blue-100 group-hover:border-blue-300 transition-all flex items-center gap-1 font-semibold shadow-2xs">
+                    <Camera className="w-3 h-3 text-blue-600" /> Photo
+                  </Badge>
+                </button>
               )}
               {Boolean(mission.mlAssessment?.mlVerified) && (
-                <Badge tone="bg-violet-50 text-violet-700 border border-violet-200 flex items-center gap-1 font-semibold" title={mission.mlAssessment.summary}>
-                  <Sparkles className="w-3 h-3 text-violet-600" /> AI Verified
-                </Badge>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMissionId(mission.id);
+                    setIsInspectOpen(true);
+                  }}
+                  className="cursor-pointer group flex items-center"
+                  title={mission.mlAssessment.summary || 'Click to view AI assessment'}
+                >
+                  <Badge tone="bg-violet-50 text-violet-700 border border-violet-200 group-hover:bg-violet-100 group-hover:border-violet-300 transition-all flex items-center gap-1 font-semibold shadow-2xs">
+                    <Sparkles className="w-3 h-3 text-violet-600" /> AI Verified
+                  </Badge>
+                </button>
               )}
               {mission.status === MISSION_STATUS.ON_SCENE && (
                 <Badge tone="bg-amber-50 text-amber-800 border border-amber-200 font-mono">
@@ -149,6 +184,12 @@ export function MissionRow({ mission, compact = false }) {
           </div>
         )}
       </div>
+
+      <IncidentEvidenceModal
+        isOpen={isInspectOpen}
+        onClose={() => setIsInspectOpen(false)}
+        mission={mission}
+      />
     </div>
   );
 }

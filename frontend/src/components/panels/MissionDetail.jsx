@@ -86,6 +86,7 @@ export default function MissionDetail() {
 
   const showOriginal = leg?.originalPath && (compareMode === 'auto' || compareMode === 'original');
   const liveRemaining = unit ? liveEta(unit) : null;
+  const photoSrc = mission.photoUri || mission.photoData;
 
   const timeline = [
     { label: 'Call created', at: mission.createdAt },
@@ -262,7 +263,7 @@ export default function MissionDetail() {
       </div>
 
       {/* --------------------------------------------------- citizen photo section */}
-      {mission.photoUri && (
+      {(photoSrc || mission.mlAssessment || mission.isCitizenReport) && (
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-4 lg:col-span-2 shadow-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -271,7 +272,7 @@ export default function MissionDetail() {
               </span>
               <div>
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Citizen Attached Incident Photo
+                  Citizen Attached Incident Photo &amp; AI Verdict
                 </h4>
                 <p className="text-[10px] text-slate-500">Live visual evidence uploaded via mobile SOS app</p>
               </div>
@@ -279,29 +280,33 @@ export default function MissionDetail() {
                 <Smartphone className="w-3 h-3" /> Citizen Mobile App
               </Badge>
             </div>
-            <button
-              onClick={() => setIsPhotoModalOpen(true)}
-              className="text-[11px] font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1 transition-colors px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 border border-[#CBD5E1] shadow-2xs"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-              Full Size
-            </button>
+            {photoSrc && (
+              <button
+                onClick={() => setIsPhotoModalOpen(true)}
+                className="text-[11px] font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1 transition-colors px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 border border-[#CBD5E1] shadow-2xs cursor-pointer"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                Full Size
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div
-              className="relative group cursor-pointer overflow-hidden rounded-xl border border-[#CBD5E1] bg-slate-900/5 shrink-0 shadow-2xs"
-              onClick={() => setIsPhotoModalOpen(true)}
-            >
-              <img
-                src={mission.photoUri}
-                alt="Incident Scene"
-                className="h-36 w-56 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200"
-              />
-              <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium gap-1.5 backdrop-blur-[1px]">
-                <Maximize2 className="w-4 h-4" /> Click to enlarge
+            {photoSrc && (
+              <div
+                className="relative group cursor-pointer overflow-hidden rounded-xl border border-[#CBD5E1] bg-slate-900/5 shrink-0 shadow-2xs"
+                onClick={() => setIsPhotoModalOpen(true)}
+              >
+                <img
+                  src={photoSrc}
+                  alt="Incident Scene"
+                  className="h-36 w-56 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200"
+                />
+                <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium gap-1.5 backdrop-blur-[1px]">
+                  <Maximize2 className="w-4 h-4" /> Click to enlarge
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="min-w-0 flex-1 text-xs space-y-2">
               <div className="flex items-center gap-2">
@@ -408,7 +413,7 @@ export default function MissionDetail() {
                 </div>
                 <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/60 min-h-[300px]">
                   <img
-                    src={mission.photoUri}
+                    src={photoSrc}
                     alt="Incident Scene High-Res"
                     className="max-h-[75vh] w-auto max-w-full object-contain rounded-lg shadow-lg"
                   />
