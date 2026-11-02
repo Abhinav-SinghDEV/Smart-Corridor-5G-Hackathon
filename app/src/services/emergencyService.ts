@@ -62,7 +62,9 @@ export async function fetchFromBackend(path: string, options?: RequestInit): Pro
   for (const host of candidates) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
+      const isPost = options?.method === 'POST';
+      const timeoutDuration = isPost ? 20000 : 3500;
+      const timeout = setTimeout(() => controller.abort(), timeoutDuration);
       const res = await fetch(`${host}${path}`, {
         ...options,
         signal: controller.signal,

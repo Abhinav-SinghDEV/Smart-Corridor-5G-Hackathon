@@ -29,10 +29,16 @@ function markCancelled(req, res) {
   res.json(report);
 }
 
+async function analyze(req, res) {
+  const report = await citizenReportService.analyzeReport(req.params.id);
+  res.json(report);
+}
+
 module.exports = {
   list,
   getOne,
   create,
   markDispatched,
   markCancelled,
+  analyze,
 };

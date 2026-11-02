@@ -10,6 +10,7 @@ const router = express.Router();
 router.get('/', asyncHandler(controller.list));
 router.get('/:id', asyncHandler(controller.getOne));
 router.post('/', asyncHandler(controller.create));
+router.post('/:id/analyze', asyncHandler(controller.analyze));
 router.patch('/:id/dispatch', asyncHandler(controller.markDispatched));
 router.patch('/:id/cancel', asyncHandler(controller.markCancelled));
 

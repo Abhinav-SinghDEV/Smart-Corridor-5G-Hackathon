@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Linking,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { getReports, EmergencyReport } from '../services/emergencyService';
@@ -172,6 +173,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 4 : 0,
   },
   header: {
     flexDirection: 'row',

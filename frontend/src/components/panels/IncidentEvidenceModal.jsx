@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Camera,
   Sparkles,
@@ -29,15 +29,50 @@ import {
 } from '../../hooks/useCitizenReportsSync';
 import { toast } from 'sonner';
 import useWorldStore from '../../store/useWorldStore';
+import { API_URL } from '../../lib/config';
 
 export default function IncidentEvidenceModal({ isOpen, onClose, mission }) {
   const [showEnlargedPhoto, setShowEnlargedPhoto] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const units = useWorldStore((s) => s.units);
   const nodes = useWorldStore((s) => s.nodes);
 
+  const reportId = mission?.citizenReportId || mission?.id;
+  const photoSrc = mission?.photoUri || mission?.photoData;
+
+  const handleRunAiAnalysis = async () => {
+    if (!reportId || isAnalyzing) return;
+    setIsAnalyzing(true);
+    try {
+      const res = await fetch(`${API_URL}/api/citizen-reports/${encodeURIComponent(reportId)}/analyze`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.mlAssessment) {
+          useWorldStore.getState().updateMission(mission.id, {
+            mlAssessment: data.mlAssessment,
+          });
+          toast.success('AI Vision Assessment completed!');
+          return;
+        }
+      }
+      toast.error('AI Assessment could not be generated.');
+    } catch {
+      toast.error('Could not connect to analysis service.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && mission && !mission.mlAssessment && (mission.photoUri || mission.photoData)) {
+      handleRunAiAnalysis();
+    }
+  }, [isOpen, mission?.id, mission?.mlAssessment]);
+
   if (!isOpen || !mission) return null;
 
-  const photoSrc = mission.photoUri || mission.photoData;
   const isFire = mission.service === SERVICE.FIRE;
   const Icon = isFire ? Flame : Siren;
   const tone = PRIORITY_TONE[mission.priority] || PRIORITY_TONE[3];
@@ -283,10 +318,37 @@ export default function IncidentEvidenceModal({ isOpen, onClose, mission }) {
                 </div>
               )}
             </div>
+          ) : isAnalyzing ? (
+            <div className="p-3.5 rounded-xl border border-violet-200 bg-violet-50/60 flex items-center justify-between gap-3 animate-pulse">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-violet-600 border-t-transparent rounded-full animate-spin shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-violet-950">Generating AI Vision Verdict...</p>
+                  <p className="text-[11px] text-slate-600">Running ResNet-50 hazard classification and YOLOv8 vehicle detection.</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-1 rounded-md">Analyzing Scene</span>
+            </div>
+          ) : photoSrc ? (
+            <div className="p-3 rounded-xl border border-violet-200 bg-violet-50/40 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-violet-600 shrink-0" />
+                <span className="text-xs text-slate-700 font-medium">Visual evidence ready for AI assessment.</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRunAiAnalysis}
+                disabled={isAnalyzing}
+                className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Run AI Analysis</span>
+              </button>
+            </div>
           ) : (
             <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-500 text-xs flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>No AI vision assessment available for this call.</span>
+              <span>No incident photo attached for AI vision assessment.</span>
             </div>
           )}
         </div>
